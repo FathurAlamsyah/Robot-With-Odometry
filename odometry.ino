@@ -54,10 +54,10 @@ byte thetaChar[8] = {
 };
 
 //Pin Tombol Mode
-  #define btnMode1 34
-  #define btnMode2 35
-  #define btnMode3 36
-  #define btnMode4 37
+  #define btnMode1 53
+  #define btnMode2 51
+  #define btnMode3 49
+  #define btnMode4 47
 
 void setup() {
   pinMode(btnMode1,INPUT);
@@ -119,7 +119,6 @@ void maju(float target, float headTar) {
   float headMin = headTar-2;
   dL = 0;
   dR = 0;
-  target = target - 10;
   odometry();
   delay(5);
   analogWrite(pwmLeft, 51);
@@ -154,7 +153,6 @@ void mundur(float target) {
   dR = 0;
   target = target * -1;
   odometry();
-  delay(5);
   analogWrite(pwmLeft, 51);
   analogWrite(pwmRight, 50);
   while (dL > target || dR > target) {
@@ -172,7 +170,6 @@ void kiri(float headTar) {
   dL = 0;
   dR = 0;
   odometry();
-  delay(5);
   analogWrite(pwmLeft, 65);
   analogWrite(pwmRight, 65);
   float headMax = headTar+2;
@@ -194,7 +191,6 @@ void kanan(float headTar) {
   dL = 0;
   dR = 0;
   odometry();
-  delay(5);
   analogWrite(pwmLeft, 65);
   analogWrite(pwmRight, 65);
   float headMax = headTar+2;
@@ -211,56 +207,44 @@ void kanan(float headTar) {
   diam();
 }
 
-byte i = 0;
-
 void loop() {
+  //Membaca Nilai Tombol Mode
   byte digMode1 = digitalRead(btnMode1);
   byte digMode2 = digitalRead(btnMode2);
   byte digMode3 = digitalRead(btnMode3);
   byte digMode4 = digitalRead(btnMode4);
- 
-  if(digMode1 == 1){
-   i=1; 
-  }else if(digMode2 == 1){
-    i=2;
-  }else if(digMode3 == 1){
-    i=3;
-  }else if(digMode4 == 1){
-    i=4;
-  }else{
-    i=0;
-  }
+
+  //Menampilkan Nilai Tombol Mode
+  Serial.print("BTN Mode1: ");Serial.println(digMode1);
+  Serial.print("BTN Mode2: ");Serial.println(digMode2);
+  Serial.print("BTN Mode3: ");Serial.println(digMode3);
+  Serial.print("BTN Mode4: ");Serial.println(digMode4);
+
+  //Mendapatkan Nilai Derajat Posisi Sekarang / Kalibrasi
+  getHead();
   
   //Derajat Acuan
-  float headF=283;  //Depan
-  float headR=338;  //Kanan
-  float headL=120;  //Kiri
-  float headB=75;   //Kembali
-  switch(i){
-    case 1:
+  float headF=330;  //Depan
+  float headR=107;  //Kanan
+  float headL=277;  //Kiri
+  float headB=225;   //Kembali
+
+  if(digMode1 == 0){
       mode1(headF, headR, headL, headB);
-      i=0;
-      break;
-    case 2:
+  }else if(digMode2 == 0){
       mode2(headF, headR, headL, headB);
-      i=0;
-      break;
-    case 3:
+  }else if(digMode3 == 0){
       mode3(headF, headR, headL, headB);
-      i=0;
-      break;
-    case 4:
+  }else if(digMode4 == 0){
       mode4(headF, headR, headL, headB);
-      i=0;
-      break;
-    default:
+  }else{
       getHead();
       odometry();
-      break;
   }
-  delay(1000);
+  delay(500);
 }
 
+//Fungsi Mode 1
 void mode1(float headF, float headR, float headL, float headB){
   maju(100,headF);
   diam();
@@ -286,6 +270,7 @@ void mode1(float headF, float headR, float headL, float headB){
   diam();
 }
 
+//Fungsi Mode 2
 void mode2(float headF, float headR, float headL, float headB){
   maju(100,headF);
   diam();
@@ -311,6 +296,7 @@ void mode2(float headF, float headR, float headL, float headB){
   diam();
 }
 
+//Fungsi Mode 3
 void mode3(float headF, float headR, float headL, float headB){
   maju(200,headF);
   diam();
@@ -336,6 +322,7 @@ void mode3(float headF, float headR, float headL, float headB){
   diam();
 }
 
+//Fungsi Mode 4
 void mode4(float headF, float headR, float headL, float headB){
   maju(200,headF);
   diam();

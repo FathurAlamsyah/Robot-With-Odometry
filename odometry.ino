@@ -53,7 +53,18 @@ byte thetaChar[8] = {
   0b00000
 };
 
+//Pin Tombol Mode
+  #define btnMode1 34
+  #define btnMode2 35
+  #define btnMode3 36
+  #define btnMode4 37
+
 void setup() {
+  pinMode(btnMode1,INPUT);
+  pinMode(btnMode2,INPUT);
+  pinMode(btnMode3,INPUT);
+  pinMode(btnMode4,INPUT);
+  
   pinMode(encoderPinALeft, INPUT);
   pinMode(encoderPinBLeft, INPUT);
   pinMode(encoderPinARight, INPUT);
@@ -69,7 +80,7 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(encoderPinARight), updateEncoderRight, RISING);
 
   Serial.begin(115200);
-  lcd.begin();
+  lcd.init();
   lcd.backlight();
   if (!mag.begin())
   {
@@ -123,10 +134,10 @@ void maju(float target, float headTar) {
       delay(100);
     }
     else if(head<headMin){
-    digitalWrite(motorLeftA, HIGH);
-    digitalWrite(motorLeftB, LOW);
-    digitalWrite(motorRightA, HIGH);
-    digitalWrite(motorRightB, LOW);
+      digitalWrite(motorLeftA, HIGH);
+      digitalWrite(motorLeftB, LOW);
+      digitalWrite(motorRightA, HIGH);
+      digitalWrite(motorRightB, LOW);
       delay(100);
     }
     digitalWrite(motorLeftA, HIGH);
@@ -200,47 +211,157 @@ void kanan(float headTar) {
   diam();
 }
 
-int i = 0;
+byte i = 0;
 
 void loop() {
-  getHead();
-  modeA();
+  byte digMode1 = digitalRead(btnMode1);
+  byte digMode2 = digitalRead(btnMode2);
+  byte digMode3 = digitalRead(btnMode3);
+  byte digMode4 = digitalRead(btnMode4);
+ 
+  if(digMode1 == 1){
+   i=1; 
+  }else if(digMode2 == 1){
+    i=2;
+  }else if(digMode3 == 1){
+    i=3;
+  }else if(digMode4 == 1){
+    i=4;
+  }else{
+    i=0;
+  }
+  
+  //Derajat Acuan
+  float headF=283;  //Depan
+  float headR=338;  //Kanan
+  float headL=120;  //Kiri
+  float headB=75;   //Kembali
+  switch(i){
+    case 1:
+      mode1(headF, headR, headL, headB);
+      i=0;
+      break;
+    case 2:
+      mode2(headF, headR, headL, headB);
+      i=0;
+      break;
+    case 3:
+      mode3(headF, headR, headL, headB);
+      i=0;
+      break;
+    case 4:
+      mode4(headF, headR, headL, headB);
+      i=0;
+      break;
+    default:
+      getHead();
+      odometry();
+      break;
+  }
   delay(1000);
 }
 
-void modeA(){
-  float headL=283;
-  float headR=338;
-  float headP=75;
-  odometry();
-  while (i < 1) {
-    maju(100,headL);
-    diam();
-    kanan(headR);
-    diam();
-    maju(80,headR);
-    diam();
-    mundur(80);
-    diam();
-    kiri(headL);
-    diam();
-    maju(100,headL);
-    diam();
-    kanan(headR);
-    diam();
-    maju(80,headR);
-    diam();
-    mundur(80);
-    diam();
-    kanan(headP);
-    diam();
-    maju(180,headP);
-    i++;
-  }
-  odometry();
+void mode1(float headF, float headR, float headL, float headB){
+  maju(100,headF);
+  diam();
+  kanan(headR);
+  diam();
+  maju(80,headR);
+  diam();
+  mundur(80);
+  diam();
+  kiri(headF);
+  diam();
+  maju(100,headF);
+  diam();
+  kanan(headR);
+  diam();
+  maju(80,headR);
+  diam();
+  mundur(80);
+  diam();
+  kanan(headB);
+  diam();
+  maju(180,headB);
   diam();
 }
 
+void mode2(float headF, float headR, float headL, float headB){
+  maju(100,headF);
+  diam();
+  kiri(headL);
+  diam();
+  maju(80,headL);
+  diam();
+  mundur(80);
+  diam();
+  kanan(headF);
+  diam();
+  maju(100,headF);
+  diam();
+  kiri(headL);
+  diam();
+  maju(80,headL);
+  diam();
+  mundur(80);
+  diam();
+  kiri(headB);
+  diam();
+  maju(180,headB);
+  diam();
+}
+
+void mode3(float headF, float headR, float headL, float headB){
+  maju(200,headF);
+  diam();
+  kanan(headR);
+  diam();
+  maju(80,headR);
+  diam();
+  mundur(80);
+  diam();
+  kanan(headB);
+  diam();
+  maju(90,headB);
+  diam();
+  kiri(headR);
+  diam();
+  maju(80,headR);
+  diam();
+  mundur(80);
+  diam();
+  kanan(headB);
+  diam();
+  maju(90,headB);
+  diam();
+}
+
+void mode4(float headF, float headR, float headL, float headB){
+  maju(200,headF);
+  diam();
+  kiri(headL);
+  diam();
+  maju(80,headL);
+  diam();
+  mundur(80);
+  diam();
+  kiri(headB);
+  diam();
+  maju(90,headB);
+  diam();
+  kanan(headL);
+  diam();
+  maju(80,headL);
+  diam();
+  mundur(80);
+  diam();
+  kiri(headB);
+  diam();
+  maju(90,headB);
+  diam();
+}
+
+//Fungsi Membaca Derajat
 float getHead() {
   sensors_event_t event;
   mag.getEvent(&event);
@@ -261,6 +382,7 @@ float getHead() {
   return headingDegrees;
 }
 
+//Fungsi Kalkulasi Odometri
 void odometry() {
   // Calculate distance traveled based on encoder counts
   float pulsesLeft = encoderCountLeft / 2.0; // Assuming 2 pulses per cycle
